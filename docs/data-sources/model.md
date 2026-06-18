@@ -45,6 +45,7 @@ data "openwebui_model" "current" {
 * `write_groups` – Group names with write access to the model.
 * `meta_additional_json` – JSON string preserving metadata returned by the API that is not otherwise exposed.
 * `params_additional_json` – JSON string preserving parameter keys not otherwise exposed.
+* `builtin_tools` – Built-in tool category overrides returned for the model.
 
 ### `params` Block
 

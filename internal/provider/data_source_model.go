@@ -146,6 +146,11 @@ func (d *modelDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 					"builtin_tools":    schema.BoolAttribute{Computed: true, Description: "Whether built-in tools are enabled for this model."},
 				},
 			},
+			"builtin_tools": schema.MapAttribute{
+				ElementType: types.BoolType,
+				Computed:    true,
+				Description: "Built-in tool category overrides for the model.",
+			},
 		},
 	}
 }

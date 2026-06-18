@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -50,6 +51,7 @@ type modelResourceModel struct {
 	FilterIDs            types.Set               `tfsdk:"filter_ids"`
 	DefaultFilterIDs     types.Set               `tfsdk:"default_filter_ids"`
 	DefaultFeatureIDs    types.List              `tfsdk:"default_feature_ids"`
+	BuiltinTools         types.Map               `tfsdk:"builtin_tools"`
 	Capabilities         *modelCapabilitiesModel `tfsdk:"capabilities"`
 }
 
@@ -111,6 +113,7 @@ type modelMetaState struct {
 	FilterIDs         types.Set
 	DefaultFilterIDs  types.Set
 	DefaultFeatureIDs types.List
+	BuiltinTools      types.Map
 	Capabilities      *modelCapabilitiesModel
 }
 
@@ -242,6 +245,13 @@ func (r *modelResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:      true,
 				Description:   "Feature identifiers enabled by default for the model.",
 				PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+			},
+			"builtin_tools": schema.MapAttribute{
+				ElementType:   types.BoolType,
+				Optional:      true,
+				Computed:      true,
+				Description:   "Built-in tool category overrides for the model.",
+				PlanModifiers: []planmodifier.Map{mapplanmodifier.UseStateForUnknown()},
 			},
 			"capabilities": schema.SingleNestedAttribute{
 				Optional:    true,
@@ -602,6 +612,7 @@ func modelResponseToModel(ctx context.Context, apiClient *client.Client, resp *c
 		FilterIDs:            metaState.FilterIDs,
 		DefaultFilterIDs:     metaState.DefaultFilterIDs,
 		DefaultFeatureIDs:    metaState.DefaultFeatureIDs,
+		BuiltinTools:         metaState.BuiltinTools,
 		Capabilities:         metaState.Capabilities,
 	}
 
@@ -817,6 +828,23 @@ func expandModelMeta(ctx context.Context, plan *modelResourceModel, diags *diag.
 			meta["defaultFeatureIds"] = features
 		} else {
 			meta["defaultFeatureIds"] = []any{}
+		}
+	}
+	if !plan.BuiltinTools.IsNull() && !plan.BuiltinTools.IsUnknown() {
+		var tools map[string]bool
+		if err := plan.BuiltinTools.ElementsAs(ctx, &tools, false); err != nil {
+			diags.AddAttributeError(
+				path.Root("builtin_tools"),
+				"Invalid built-in tools value",
+				fmt.Sprintf("Unable to decode builtin_tools into a map of booleans: %v", err),
+			)
+		} else {
+			ensureMap()
+			items := make(map[string]any, len(tools))
+			for k, v := range tools {
+				items[k] = v
+			}
+			meta["builtinTools"] = items
 		}
 	}
 
@@ -1072,6 +1100,7 @@ func flattenModelMeta(ctx context.Context, data map[string]any) (modelMetaState,
 		FilterIDs:         types.SetNull(types.StringType),
 		DefaultFilterIDs:  types.SetNull(types.StringType),
 		DefaultFeatureIDs: types.ListNull(types.StringType),
+		BuiltinTools:      types.MapNull(types.BoolType),
 		Capabilities:      nil,
 	}
 
@@ -1178,6 +1207,19 @@ func flattenModelMeta(ctx context.Context, data map[string]any) (modelMetaState,
 			delete(additional, "defaultFeatureIds")
 		} else {
 			diags.AddError("Unexpected meta value", fmt.Sprintf("Expected meta.defaultFeatureIds to be a list of strings, received %T", raw))
+		}
+	}
+	if raw, ok := data["builtinTools"]; ok && raw != nil {
+		tools, convOK := toBoolMap(raw)
+		if convOK {
+			tfMap, mapDiags := types.MapValueFrom(ctx, types.BoolType, tools)
+			diags.Append(mapDiags...)
+			if !mapDiags.HasError() {
+				state.BuiltinTools = tfMap
+			}
+			delete(additional, "builtinTools")
+		} else {
+			diags.AddError("Unexpected meta value", fmt.Sprintf("Expected meta.builtinTools to be a map of boolean values, received %T", raw))
 		}
 	}
 
@@ -1408,6 +1450,25 @@ func toStringMap(value any) (map[string]string, bool) {
 				continue
 			}
 			result[key] = fmt.Sprint(raw)
+		}
+		return result, true
+	default:
+		return nil, false
+	}
+}
+
+func toBoolMap(value any) (map[string]bool, bool) {
+	switch v := value.(type) {
+	case map[string]bool:
+		return v, true
+	case map[string]any:
+		result := make(map[string]bool, len(v))
+		for key, raw := range v {
+			boolVal, ok := toBoolValue(raw)
+			if !ok {
+				return nil, false
+			}
+			result[key] = boolVal
 		}
 		return result, true
 	default:

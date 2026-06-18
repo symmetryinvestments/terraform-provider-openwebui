@@ -67,6 +67,11 @@ resource "openwebui_model" "volt_answer" {
 
   tool_ids            = ["deep_research", "weather"]
   default_feature_ids = ["web_search", "image_generation", "code_interpreter"]
+  builtin_tools = {
+    code_interpreter = true
+    image_generation = false
+    web_search       = false
+  }
 
   read_groups  = ["Knowledge Managers"]
   write_groups = ["Model Curators"]
@@ -84,7 +89,7 @@ Top-level arguments:
 * `params` (Required) – Single nested block specifying model parameters. See [Params Block](#params-block) for details.
 * `base_model_id` (Optional) – Identifier of the base model to extend.
 * `is_active` (Optional) – Whether the model should be marked active. Defaults to the value returned by the API when omitted.
-* `profile_image_url`, `description`, `suggestion_prompts`, `tags`, `tool_ids`, `default_feature_ids`, `capabilities` (Optional) – Presentation metadata. See [Metadata Arguments](#metadata-arguments).
+* `profile_image_url`, `description`, `suggestion_prompts`, `tags`, `tool_ids`, `default_feature_ids`, `builtin_tools`, `capabilities` (Optional) – Presentation metadata. See [Metadata Arguments](#metadata-arguments).
 * `read_groups` (Optional) – Group names or IDs granted read access. When populated, the provider resolves names to IDs using the Open WebUI API.
 * `write_groups` (Optional) – Group names or IDs granted write access. Groups listed here automatically receive read access.
 * `params_additional_json` (Optional) – Extra JSON merged into the params payload. This field is also populated automatically when the API returns unsupported keys.
@@ -134,6 +139,7 @@ The `params` block mirrors the payload expected by the Open WebUI model API. Eve
 * `tags` – Simple list of tag names.
 * `tool_ids` – Tool identifiers made available to this model.
 * `default_feature_ids` – Feature identifiers enabled by default.
+* `builtin_tools` – Map of built-in tool category overrides. Categories omitted from the map keep Open WebUI's default behaviour.
 * `capabilities` – Nested block of boolean capability flags with the attributes `vision`, `file_upload`, `web_search`, `image_generation`, `code_interpreter`, `citations`, `status_updates`, and `usage`.
 
 ## Attribute Reference
