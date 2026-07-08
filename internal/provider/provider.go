@@ -147,6 +147,7 @@ func (p *openWebUIProvider) DataSources(_ context.Context) []func() datasource.D
 		NewFilesDataSource,
 		NewConfigExportDataSource,
 		NewUserDataSource,
+		NewUsersDataSource,
 		NewToolServerVerifyDataSource,
 	}
 }

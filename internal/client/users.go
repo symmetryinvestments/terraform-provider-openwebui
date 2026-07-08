@@ -29,21 +29,22 @@ type listUsersResponse struct {
 }
 
 // SearchUsers finds users whose username, email, or name matches the provided query.
-func (c *Client) SearchUsers(ctx context.Context, query string, limit int) ([]User, error) {
+// If query is empty, all users are returned. Results are paginated by the server;
+// page is 1-indexed. It returns the users for the requested page along with the
+// total number of users matching the query across all pages.
+func (c *Client) SearchUsers(ctx context.Context, query string, page int) ([]User, int, error) {
 	values := url.Values{}
 	if query != "" {
 		values.Set("query", query)
 	}
-	if limit > 0 {
-		values.Set("limit", fmt.Sprintf("%d", limit))
-	}
+	values.Set("page", fmt.Sprintf("%d", page))
 
 	var resp listUsersResponse
 	if err := c.do(ctx, http.MethodGet, "users/", values, nil, &resp); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return resp.Users, nil
+	return resp.Users, resp.Total, nil
 }
 
 // GetUser retrieves a user by identifier.
