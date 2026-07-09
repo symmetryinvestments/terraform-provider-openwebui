@@ -478,7 +478,7 @@ func resolveUsernamesToIDs(ctx context.Context, apiClient *client.Client, identi
 }
 
 func lookupUserID(ctx context.Context, apiClient *client.Client, identifier string) (string, error) {
-	users, err := apiClient.SearchUsers(ctx, identifier, 50)
+	users, _, err := apiClient.SearchUsers(ctx, identifier, 1)
 	if err != nil {
 		return "", err
 	}
