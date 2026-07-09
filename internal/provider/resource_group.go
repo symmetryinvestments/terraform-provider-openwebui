@@ -518,7 +518,7 @@ func lookupUserID(ctx context.Context, apiClient *client.Client, identifier stri
 }
 
 func extractUserLabels(users []client.User) []string {
-	var names []string
+	names := []string{}
 	for _, user := range users {
 		label := user.Email
 		if label == "" {
