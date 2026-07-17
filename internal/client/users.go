@@ -38,6 +38,9 @@ func (c *Client) SearchUsers(ctx context.Context, query string, page int) ([]Use
 		values.Set("query", query)
 	}
 	values.Set("page", fmt.Sprintf("%d", page))
+	// NOTE: the server will not sort the query unless asked, so we must ask for at least an order.
+	// https://github.com/open-webui/open-webui/discussions/27141
+	values.Set("order_by", "created_at");
 
 	var resp listUsersResponse
 	if err := c.do(ctx, http.MethodGet, "users/", values, nil, &resp); err != nil {
