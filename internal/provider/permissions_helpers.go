@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	groupPermissionsWorkspaceKeys = []string{"models", "knowledge", "prompts", "tools", "skills", "models_import", "models_export", "prompts_import", "prompts_export", "tools_import", "tools_export"}
-	groupPermissionsSharingKeys   = []string{"models", "knowledge", "prompts", "tools", "skills", "notes", "public_models", "public_knowledge", "public_prompts", "public_tools", "public_skills", "public_notes", "public_chats"}
-	groupPermissionsAccessGrantsKeys = []string{"allow_users"}
-	groupPermissionsChatKeys      = []string{"controls", "valves", "system_prompt", "params", "file_upload", "web_upload", "delete", "delete_message", "continue_response", "regenerate_response", "rate_response", "edit", "share", "export", "stt", "tts", "call", "multiple_models", "temporary", "temporary_enforced"}
-	groupPermissionsFeaturesKeys  = []string{"api_keys", "notes", "channels", "folders", "direct_tool_servers", "web_search", "image_generation", "code_interpreter", "memories", "automations", "calendar"}
+	groupPermissionsWorkspaceKeys = []string{"models", "knowledge", "prompts", "tools", "skills", "skills_import", "skills_export", "models_import", "models_export", "prompts_import", "prompts_export", "tools_import", "tools_export"}
+	groupPermissionsSharingKeys   = []string{"models", "knowledge", "prompts", "tools", "skills", "notes", "public_models", "public_knowledge", "public_prompts", "public_tools", "public_skills", "public_notes", "public_chats", "folders", "open_chats", "public_calendars"}
+	groupPermissionsAccessGrantsKeys = []string{"allow_users", "allow_groups"}
+	groupPermissionsChatKeys      = []string{"controls", "valves", "system_prompt", "params", "file_upload", "web_upload", "delete", "delete_message", "continue_response", "regenerate_response", "rate_response", "edit", "share", "export", "stt", "tts", "call", "multiple_models", "temporary", "temporary_enforced", "import"}
+	groupPermissionsFeaturesKeys  = []string{"api_keys", "notes", "channels", "folders", "direct_tool_servers", "web_search", "image_generation", "code_interpreter", "memories", "automations", "calendar", "webhooks"}
 	groupPermissionsSettingsKeys  = []string{"interface"}
 
 	groupPermissionsAllowedSets = map[string]map[string]struct{}{
